@@ -5,10 +5,10 @@ A client and a server that helps you identify blocked TCP ports.
 ## Usage Example
 
 Start the server:
->python port-scanner-srv.py <Port>
+>python port-scanner-srv.py \<Port\>
 
 Start the client:
->python port-scanner.py <ServerIP> <Port>
+>python port-scanner.py \<ServerIP\> \<Port\>
 
 ## Motivation
 
@@ -20,4 +20,4 @@ Clone the repository, make sure you have Python 2.7 installed.
 
 ## License
 
-A short snippet describing the license (MIT, Apache, etc.)
+GNU General Public License
