@@ -33,16 +33,38 @@ class MainServer(threading.Thread):
         self.sock.listen(1)
         self.clientsocket = None
         self.address = ''
+        self.connectionsuccesfull = 0
     def run(self):
         while 1:
-            (self.clientsocket, self.address) = self.sock.accept()
+            try:
+                (self.clientsocket, self.address) = self.sock.accept()
+                self.connectionsuccesfull = 1
+                self.sock.shutdown(socket.SHUT_RDWR)
+                self.sock.close()
+                break
+            except:
+                print "Socket was closed"
+                break
     def mysend(self, msg):
         self.clientsocket.send(msg)
-    def close(self):
+    def __del__(self):
+        try:
+            if self.clientsocket != None:
+               self.sock.shutdown(socket.SHUT_RDWR)
+        except:
+            None
+
         self.sock.close()
 
 
-
+class Client:
+    def __init__(self,sock=None):
+        if sock is None:
+            self.sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        else:
+            self.sock=sock
+    def connect(self, host, port):
+        self.sock.connect((host,port))
 
 
 
@@ -59,13 +81,19 @@ if __name__ == '__main__':
         if mainserver.clientsocket != None:
             for i in range (1024, 65535):
                 tserver = MainServer(i)
-                mainserver.mysend(str(i))
                 tserver.start()
+                mainserver.mysend(str(i))
                 time.sleep(3)
-                if tserver.clientsocket != None:
+                if tserver.connectionsuccesfull:
                     ports.append(i)
                 else:
-                    tserver.close()
+                    try:
+                        ##This is needed to make sure the port is released after we are done with it
+                        tclient = Client()
+                        tclient.connect(socket.gethostname(), i)
+                    except:
+                        print "Unable to connect - port {}".join(i)
+                    del tserver
             mainserver.mysend(str(ports.count()))
             time.sleep(1)
             print '| '.join(ports)
