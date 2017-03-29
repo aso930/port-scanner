@@ -82,22 +82,28 @@ if __name__ == '__main__':
             for i in range (1024, 65535):
                 tserver = MainServer(i)
                 tserver.start()
+                mainserver.mysend(str(len(str(i))))
                 mainserver.mysend(str(i))
                 time.sleep(3)
                 if tserver.connectionsuccesfull:
                     ports.append(i)
+                    print str(i)
                 else:
                     try:
-                        ##This is needed to make sure the port is released after we are done with it
+                        ##This is needed to close the other thread if there is no legit connection
                         tclient = Client()
                         tclient.connect(socket.gethostname(), i)
                     except:
                         print "Unable to connect - port {}".join(i)
                     del tserver
-            mainserver.mysend(str(ports.count()))
+            result = '| '.join(ports)
+            #mainserver.mysend(len(result))
             time.sleep(1)
-            print '| '.join(ports)
-            mainserver.mysend('| '.join(ports))
+            print result
+            #mainserver.mysend(result)
+            del mainserver
+            break
+    print "Finished execution"
 
 
 
