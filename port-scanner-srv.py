@@ -5,23 +5,6 @@ import sys, errno
 import threading
 import time
 
-'''
-class TempServer(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-
-    def testport(self,port):
-        tserversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        tserversocket.bind((socket.gethostname(), port))
-        tserversocket.listen(1)
-        print "Listening...."
-        (tclient, taddress) = tserversocket.accept()
-        print "Connection established"
-        tserversocket.close()
-    def closeport(port):
-        tclientsocket =socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        tclientsocket.connect((socket.gethostname(), port))
-'''
 class MainServer(threading.Thread):
     def __init__(self, server_port=443 , sock=None):
         threading.Thread.__init__(self)
@@ -53,7 +36,6 @@ class MainServer(threading.Thread):
                self.sock.shutdown(socket.SHUT_RDWR)
         except:
             None
-
         self.sock.close()
 
 
@@ -79,14 +61,14 @@ if __name__ == '__main__':
     mainserver.start()
     while True:
         if mainserver.clientsocket != None:
-            for i in range (1024, 65535):
+            for i in range (1024, 65536):
                 tserver = MainServer(i)
                 tserver.start()
                 mainserver.mysend(str(len(str(i))))
                 mainserver.mysend(str(i))
                 time.sleep(3)
                 if tserver.connectionsuccesfull:
-                    ports.append(i)
+                    ports.append(str(i))
                     print str(i)
                 else:
                     try:
@@ -96,11 +78,11 @@ if __name__ == '__main__':
                     except:
                         print "Unable to connect - port {}".join(i)
                     del tserver
-            result = '| '.join(ports)
-            #mainserver.mysend(len(result))
+            result = ', '.join(ports)
+            mainserver.mysend("1") #sending length of next message
+            mainserver.mysend("0") #sending signal for end of communication
             time.sleep(1)
             print result
-            #mainserver.mysend(result)
             del mainserver
             break
     print "Finished execution"

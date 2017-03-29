@@ -2,9 +2,6 @@
 import socket
 import sys, errno
 
-
-
-
 class Client:
     def __init__(self,sock=None):
         if sock is None:
@@ -25,13 +22,16 @@ class Client:
     def myreceive(self):
         chunks = []
         bytes_recd = 0
-        MSGLEN = int(self.sock.recv(1))
-        while bytes_recd < MSGLEN:
-            chunk = self.sock.recv(min(MSGLEN - bytes_recd, 2048))
-            if chunk == '':
-                raise RuntimeError("socket connection broken")
-            chunks.append(chunk)
-            bytes_recd = bytes_recd + len(chunk)
+        try:
+            MSGLEN = int(self.sock.recv(1))
+            while bytes_recd < MSGLEN:
+                chunk = self.sock.recv(min(MSGLEN - bytes_recd, 2048))
+                if chunk == '':
+                    raise RuntimeError("socket connection broken")
+                chunks.append(chunk)
+                bytes_recd = bytes_recd + len(chunk)
+        except:
+            print "Received bad Data"
         return ''.join(chunks)
 
 if __name__ == '__main__':
@@ -44,14 +44,16 @@ if __name__ == '__main__':
         exit(errno.EINVAL)
     client.connect(server_address,int(server_port))
     tserver_port = client.myreceive()
-    while tserver_port != '':
+    while True:
         tserver_port = client.myreceive()
+        if tserver_port == "0":
+            break
         tclient = Client()
         if(tclient.connect(server_address, int(tserver_port)) == 0):
-
             print tserver_port
             ports.append(tserver_port)
-    print '| '.join(ports)
+
+    print ', '.join(ports)
 
 
 
